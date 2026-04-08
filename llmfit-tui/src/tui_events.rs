@@ -175,7 +175,7 @@ fn handle_visual_mode(app: &mut App, key: KeyEvent) {
 fn handle_select_mode(app: &mut App, key: KeyEvent) {
     match key.code {
         // Exit select mode
-        KeyCode::Esc | KeyCode::Char('q') => app.exit_select_mode(),
+        KeyCode::Esc | KeyCode::Char('q') | KeyCode::Char('V') => app.exit_select_mode(),
 
         // Column navigation
         KeyCode::Left | KeyCode::Char('h') => app.select_column_left(),
