@@ -632,6 +632,7 @@ Requirements:
 
 - LM Studio must be running with its local server enabled
 - Default endpoint: `http://127.0.0.1:1234`
+- To use a remote LM Studio instance, set `LMSTUDIO_HOST` to the full base URL before launching `llmfit`
 
 How it works:
 
@@ -642,11 +643,13 @@ How it works:
 
 ### Remote LM Studio instances
 
-To connect to LM Studio on a different host or port, set the `LMSTUDIO_HOST` environment variable:
+To connect to LM Studio on a different host or port, set the `LMSTUDIO_HOST` environment variable to the full base URL:
 
 ```sh
 LMSTUDIO_HOST="http://192.168.1.100:1234" llmfit
 ```
+
+This changes both model listing and download-status polling to target the remote instance instead of the local default.
 
 ### Model name mapping
 
