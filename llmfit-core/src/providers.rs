@@ -560,6 +560,13 @@ impl LlamaCppProvider {
         Self::default()
     }
 
+    pub fn with_models_dir(models_dir: PathBuf) -> Self {
+        Self {
+            models_dir,
+            ..Self::default()
+        }
+    }
+
     /// Like `installed_models`, but also returns the true GGUF file count.
     /// The HashSet may have fewer entries than 2*count due to deduplication
     /// when stripping quantization suffixes, so `len() / 2` is unreliable.
@@ -2779,6 +2786,13 @@ mod tests {
             normalize_ollama_host("ftp://ollama.example.com:11434"),
             None
         );
+    }
+
+    #[test]
+    fn test_llamacpp_provider_with_models_dir_overrides_default() {
+        let custom = PathBuf::from("/tmp/llmfit-custom-models");
+        let provider = LlamaCppProvider::with_models_dir(custom.clone());
+        assert_eq!(provider.models_dir(), custom.as_path());
     }
 
     #[test]

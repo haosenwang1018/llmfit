@@ -510,6 +510,10 @@ AGENT USAGE:
         #[arg(long, value_name = "GB")]
         budget: Option<f64>,
 
+        /// Override the destination directory for downloaded GGUF files
+        #[arg(long, value_name = "PATH")]
+        output_dir: Option<std::path::PathBuf>,
+
         /// List available GGUF files in the repo without downloading
         #[arg(long)]
         list: bool,
@@ -1282,12 +1286,17 @@ fn run_download(
     model: &str,
     quant: Option<&str>,
     budget: Option<f64>,
+    output_dir: Option<&std::path::Path>,
     list_only: bool,
     overrides: &HardwareOverrides,
 ) {
     use llmfit_core::providers::LlamaCppProvider;
 
-    let provider = LlamaCppProvider::new();
+    let provider = if let Some(dir) = output_dir {
+        LlamaCppProvider::with_models_dir(dir.to_path_buf())
+    } else {
+        LlamaCppProvider::new()
+    };
 
     // Resolve repo ID: try known mapping, then treat as repo, then search
     let repo_id = if model.contains('/') {
@@ -1925,9 +1934,17 @@ fn main() {
                 model,
                 quant,
                 budget,
+                output_dir,
                 list,
             } => {
-                run_download(&model, quant.as_deref(), budget, list, &overrides);
+                run_download(
+                    &model,
+                    quant.as_deref(),
+                    budget,
+                    output_dir.as_deref(),
+                    list,
+                    &overrides,
+                );
             }
 
             Commands::HfSearch { query, limit } => {
@@ -2039,6 +2056,28 @@ mod tests {
             runtime: InferenceRuntime::LlamaCpp,
             installed: false,
             fits_with_turboquant: false,
+        }
+    }
+
+    #[test]
+    fn download_command_accepts_output_dir_flag() {
+        let cli = Cli::try_parse_from([
+            "llmfit",
+            "download",
+            "qwen3:8b",
+            "--output-dir",
+            "/mnt/models/gguf",
+        ])
+        .expect("download command should parse");
+
+        match cli.command.expect("subcommand expected") {
+            Commands::Download { output_dir, .. } => {
+                assert_eq!(
+                    output_dir,
+                    Some(std::path::PathBuf::from("/mnt/models/gguf"))
+                );
+            }
+            _ => panic!("expected download command"),
         }
     }
 
